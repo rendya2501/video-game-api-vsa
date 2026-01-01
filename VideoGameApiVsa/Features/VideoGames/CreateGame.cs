@@ -1,6 +1,5 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Carter;
+using MediatR;
 using VideoGameApiVsa.Data;
 using VideoGameApiVsa.Entities;
 
@@ -27,17 +26,29 @@ public static class CreateGame
             return new Response(videoGame.Id, videoGame.Title, videoGame.Genre, videoGame.ReleaseYear);
         }
     }
-}
 
-[ApiController]
-[Route("api/games")]
-public class CreateGameController(ISender sender) : ControllerBase
-{
-    [HttpPost]
-    public async Task<ActionResult<CreateGame.Response>> CreateGame(CreateGame.Command command, CancellationToken cancellationToken)
+    public class EndPoint : ICarterModule
     {
-        var response = await sender.Send(command, cancellationToken);
-        // return CreatedAtAction(nameof(CreateGame), new { id = response.Id }, response);
-        return Ok(response);
+        public void AddRoutes(IEndpointRouteBuilder app)
+        {
+            app.MapPost("api/games/", async (ISender sender, Command command, CancellationToken cancellationToken) =>
+            {
+                var game = await sender.Send(command, cancellationToken);
+                return Results.Created($"/api/games/{game.Id}", game);
+            });
+        }
     }
 }
+
+//[ApiController]
+//[Route("api/games")]
+//public class CreateGameController(ISender sender) : ControllerBase
+//{
+//    [HttpPost]
+//    public async Task<ActionResult<CreateGame.Response>> CreateGame(CreateGame.Command command, CancellationToken cancellationToken)
+//    {
+//        var response = await sender.Send(command, cancellationToken);
+//        // return CreatedAtAction(nameof(CreateGame), new { id = response.Id }, response);
+//        return Ok(response);
+//    }
+//}

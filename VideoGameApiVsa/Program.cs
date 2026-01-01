@@ -1,3 +1,4 @@
+using Carter;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using VideoGameApiVsa.Data;
@@ -13,8 +14,10 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<VideoGameDbContext>(options =>
     options.UseInMemoryDatabase("GameDB"));
-// MediatR registration
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
+builder.Services.AddCarter();
 
 var app = builder.Build();
 
@@ -49,5 +52,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapCarter();
 
 app.Run();

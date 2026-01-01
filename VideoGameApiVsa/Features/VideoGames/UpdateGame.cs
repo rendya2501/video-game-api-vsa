@@ -1,5 +1,5 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
+﻿using Carter;
+using MediatR;
 using VideoGameApiVsa.Data;
 
 namespace VideoGameApiVsa.Features.VideoGames;
@@ -28,26 +28,39 @@ public static class UpdateGame
             return new Response(videoGame.Id, videoGame.Title, videoGame.Genre, videoGame.ReleaseYear);
         }
     }
-}
 
-[ApiController]
-[Route("api/games")]
-public class UpdateGameController(ISender sender) : ControllerBase
-{
-    [HttpPut("{id}")]
-    public async Task<ActionResult<UpdateGame.Response>> UpdateGame(int id, UpdateGame.Command command, CancellationToken cancellationToken)
+    public class EndPoint : ICarterModule
     {
-        if (id != command.Id)
+        public void AddRoutes(IEndpointRouteBuilder app)
         {
-            return BadRequest("ID in URL does not match ID in request body.");
+            app.MapPut("api/games/{id}", async (ISender sender, Command command, int id, CancellationToken cancellationToken) =>
+            {
+                var updatedGame = await sender.Send(command with { Id = id }, cancellationToken);
+                return updatedGame is not null ? Results.Ok(updatedGame) 
+                    : Results.NotFound($"Video game with id {id} not found.");
+            });
         }
-
-        var response = await sender.Send(command, cancellationToken);
-        if (response == null)
-        {
-            return NotFound("Video game with given In not found");
-        }
-
-        return Ok(response);
     }
 }
+
+//[ApiController]
+//[Route("api/games")]
+//public class UpdateGameController(ISender sender) : ControllerBase
+//{
+//    [HttpPut("{id}")]
+//    public async Task<ActionResult<UpdateGame.Response>> UpdateGame(int id, UpdateGame.Command command, CancellationToken cancellationToken)
+//    {
+//        if (id != command.Id)
+//        {
+//            return BadRequest("ID in URL does not match ID in request body.");
+//        }
+
+//        var response = await sender.Send(command, cancellationToken);
+//        if (response == null)
+//        {
+//            return NotFound("Video game with given In not found");
+//        }
+
+//        return Ok(response);
+//    }
+//}

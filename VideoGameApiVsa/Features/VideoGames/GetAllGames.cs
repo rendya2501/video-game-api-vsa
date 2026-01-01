@@ -1,5 +1,5 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
+﻿using Carter;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VideoGameApiVsa.Data;
 
@@ -19,17 +19,25 @@ public static class GetAllGames
             return videoGamses.Select(vg => new Response(vg.Id, vg.Title, vg.Genre, vg.ReleaseYear));
         }
     }
-}
 
-
-[ApiController]
-[Route("api/games")]
-public class GetAllGamsesController(ISender sender) : ControllerBase
-{
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetAllGames.Response>>> GetAllGames(CancellationToken cancellationToken)
+    public class EndPoint : ICarterModule
     {
-        var response = await sender.Send(new GetAllGames.Query(), cancellationToken);
-        return Ok(response);
+        public void AddRoutes(IEndpointRouteBuilder app)
+        {
+            app.MapGet("api/games/", async (ISender sender, CancellationToken cancellationToken) =>
+                 await sender.Send(new Query(), cancellationToken));
+        }
     }
 }
+
+//[ApiController]
+//[Route("api/games")]
+//public class GetAllGamsesController(ISender sender) : ControllerBase
+//{
+//    [HttpGet]
+//    public async Task<ActionResult<IEnumerable<GetAllGames.Response>>> GetAllGames(CancellationToken cancellationToken)
+//    {
+//        var response = await sender.Send(new GetAllGames.Query(), cancellationToken);
+//        return Ok(response);
+//    }
+//}
