@@ -28,10 +28,9 @@ public static class UpdateGame
         public async Task<Response?> Handle(Command command, CancellationToken ct)
         {
             var videoGame = await dbContext.VideoGames.FindAsync([command.Id], ct);
+
             if (videoGame is null)
-            {
                 return null;
-            }
 
             videoGame.Title = command.Title;
             videoGame.Genre = command.Genre;
@@ -45,9 +44,11 @@ public static class UpdateGame
     public static async Task<IResult> Endpoint(ISender sender, int id, Request request, CancellationToken ct)
     {
         var command = new Command(id, request.Title, request.Genre, request.ReleaseYear);
-        var updatedGame = await sender.Send(command with { Id = id }, ct);
-        return updatedGame is not null
-            ? Results.Ok(updatedGame)
-            : Results.NotFound($"Video game with id {id} not found.");
+        var result = await sender.Send(command with { Id = id }, ct);
+
+        if (result is null)
+            return Results.NotFound($"Video game with id {id} not found.");
+
+        return Results.Ok(result);
     }
 }
