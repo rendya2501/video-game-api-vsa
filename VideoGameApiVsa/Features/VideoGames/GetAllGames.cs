@@ -19,40 +19,9 @@ public static class GetAllGames
         }
     }
 
-    // 案3
     public static async Task<IResult> Endpoint(ISender sender, CancellationToken ct)
     {
         var result = await sender.Send(new Query(), ct);
         return Results.Ok(result);
     }
-
-    // 案4
-    internal static void GetAllGamesEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapGet("/", async (ISender sender, CancellationToken ct) =>
-             await sender.Send(new Query(), ct));
-    }
-
-    // 案2
-    //public class EndPoint : ICarterModule
-    //{
-    //    public void AddRoutes(IEndpointRouteBuilder app)
-    //    {
-    //        app.MapGet("api/games/", async (ISender sender, CancellationToken ct) =>
-    //             await sender.Send(new Query(), ct));
-    //    }
-    //}
 }
-
-// 案1
-//[ApiController]
-//[Route("api/games")]
-//public class GetAllGamsesController(ISender sender) : ControllerBase
-//{
-//    [HttpGet]
-//    public async Task<ActionResult<IEnumerable<GetAllGames.Response>>> GetAllGames(CancellationToken ct)
-//    {
-//        var response = await sender.Send(new GetAllGames.Query(), ct);
-//        return Ok(response);
-//    }
-//}

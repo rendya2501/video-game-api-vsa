@@ -23,24 +23,11 @@ public static class GetGameById
         }
     }
 
-    // 案3
     public static async Task<IResult> Endpoint(ISender sender, int id, CancellationToken ct)
     {
         var result = await sender.Send(new Query(id), ct);
         return result is not null
             ? Results.Ok(result)
             : Results.NotFound($"Video game with id {id} not found.");
-    }
-
-    // 案4
-    internal static void GetGameByIdEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapGet("/{id:int}", async (ISender sender, int id, CancellationToken ct) =>
-        {
-            var result = await sender.Send(new Query(id), ct);
-            return result is not null
-                ? Results.Ok(result)
-                : Results.NotFound($"Video game with id {id} not found.");
-        }).WithName("GetGameById");
     }
 }

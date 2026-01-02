@@ -24,7 +24,6 @@ public static class DeleteGame
         }
     }
 
-    // 案3
     public static async Task<IResult> Endpoint(ISender sender, int id, CancellationToken ct)
     {
         var deleted = await sender.Send(new Command(id), ct);
@@ -32,42 +31,4 @@ public static class DeleteGame
             ? Results.NoContent()
             : Results.NotFound($"Video game with id {id} not found.");
     }
-
-    // 案4
-    internal static void DeleteGameEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapDelete("/{id:int}", async (ISender sender, int id, CancellationToken ct) =>
-            await sender.Send(new Command(id), ct) 
-                ? Results.NoContent()
-                : Results.NotFound($"Video game with id {id} not found."));
-    }
-
-    //// 案2
-    //public class EndPoint : ICarterModule
-    //{
-    //    public void AddRoutes(IEndpointRouteBuilder app)
-    //    {
-    //        app.MapDelete("api/games/{id:int}", async (ISender sender, int id, CancellationToken ct) =>
-    //            await sender.Send(new Command(id), ct) ? Results.NoContent()
-    //                : Results.NotFound($"Video game with id {id} not found."));
-    //    }
-    //}
 }
-
-// 案1
-//[ApiController]
-//[Route("api/games")]
-//public class DeleteGameController(ISender sender) : ControllerBase
-//{
-//    [HttpDelete("{id}")]
-//    public async Task<ActionResult<bool>> DeleteGame(int id, CancellationToken cancellationToken)
-//    {
-//        var response = await sender.Send(new DeleteGame.Command(id), cancellationToken);
-//        if (!response)
-//        {
-//            return NotFound("Video game with given ID not found");
-//        }
-
-//        return NoContent();
-//    }
-//}

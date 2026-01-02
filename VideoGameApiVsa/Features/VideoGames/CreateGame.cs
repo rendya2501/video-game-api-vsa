@@ -43,58 +43,13 @@ public static class CreateGame
         }
     }
 
-    // 案3
     public static async Task<IResult> Endpoint(ISender sender, Request request, CancellationToken ct)
     {
         var command = new Command(request.Title, request.Genre, request.ReleaseYear);
         var result = await sender.Send(command, ct);
-        //return Results.Created($"/api/games/{result.Id}", result);
         return Results.CreatedAtRoute(
             routeName: "GetGameById",
             routeValues: new { id = result.Id },
             value: result);
     }
-
-    // 案4
-    internal static void CreateGameEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapPost("/", async (ISender sender, Request request, CancellationToken ct) =>
-        {
-            var command = new Command(request.Title, request.Genre, request.ReleaseYear);
-            var result = await sender.Send(command, ct);
-            // return Results.Created($"/api/games/{game.Id}", game);
-            return Results.CreatedAtRoute(
-                routeName: "GetGameById",
-                routeValues: new { id = result.Id },
-                value: result);
-        });
-    }
-
-    // 案2
-    //public class EndPoint : ICarterModule
-    //{
-    //    public void AddRoutes(IEndpointRouteBuilder app)
-    //    {
-    //        app.MapPost("api/games/", async (ISender sender, Command command, CancellationToken ct) =>
-    //        {
-    //            var game = await sender.Send(command, ct);
-    //            return Results.Created($"/api/games/{game.Id}", game);
-    //        });
-    //    }
-    //}
 }
-
-
-// 案1
-//[ApiController]
-//[Route("api/games")]
-//public class CreateGameController(ISender sender) : ControllerBase
-//{
-//    [HttpPost]
-//    public async Task<ActionResult<CreateGame.Response>> CreateGame(CreateGame.Command command, CancellationToken ct)
-//    {
-//        var response = await sender.Send(command, ct);
-//        // return CreatedAtAction(nameof(CreateGame), new { id = response.Id }, response);
-//        return Ok(response);
-//    }
-//}

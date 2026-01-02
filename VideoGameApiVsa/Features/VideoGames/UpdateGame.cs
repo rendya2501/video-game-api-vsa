@@ -28,7 +28,6 @@ public static class UpdateGame
         }
     }
 
-    // 案3
     public static async Task<IResult> Endpoint(ISender sender, int id, Command command, CancellationToken ct)
     {
         var updatedGame = await sender.Send(command with { Id = id }, ct);
@@ -36,53 +35,4 @@ public static class UpdateGame
             ? Results.Ok(updatedGame)
             : Results.NotFound($"Video game with id {id} not found.");
     }
-
-    // 案4
-    internal static void UpdateGameEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapPut("/{id:int}", async (ISender sender, Command command, int id, CancellationToken ct) =>
-        {
-            var updatedGame = await sender.Send(command with { Id = id }, ct);
-            return updatedGame is not null
-                ? Results.Ok(updatedGame)
-                : Results.NotFound($"Video game with id {id} not found.");
-        });
-    }
-
-    //// 案2
-    //public class EndPoint : ICarterModule
-    //{
-    //    public void AddRoutes(IEndpointRouteBuilder app)
-    //    {
-    //        app.MapPut("api/games/{id:int}", async (ISender sender, Command command, int id, CancellationToken ct) =>
-    //        {
-    //            var updatedGame = await sender.Send(command with { Id = id }, ct);
-    //            return updatedGame is not null ? Results.Ok(updatedGame)
-    //                : Results.NotFound($"Video game with id {id} not found.");
-    //        });
-    //    }
-    //}
 }
-
-// 案1
-//[ApiController]
-//[Route("api/games")]
-//public class UpdateGameController(ISender sender) : ControllerBase
-//{
-//    [HttpPut("{id}")]
-//    public async Task<ActionResult<UpdateGame.Response>> UpdateGame(int id, UpdateGame.Command command, CancellationToken cancellationToken)
-//    {
-//        if (id != command.Id)
-//        {
-//            return BadRequest("ID in URL does not match ID in request body.");
-//        }
-
-//        var response = await sender.Send(command, cancellationToken);
-//        if (response == null)
-//        {
-//            return NotFound("Video game with given In not found");
-//        }
-
-//        return Ok(response);
-//    }
-//}
