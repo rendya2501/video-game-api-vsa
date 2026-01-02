@@ -27,8 +27,10 @@ public static class DeleteGame
     public static async Task<IResult> Endpoint(ISender sender, int id, CancellationToken ct)
     {
         var deleted = await sender.Send(new Command(id), ct);
-        return deleted
-            ? Results.NoContent()
-            : Results.NotFound($"Video game with id {id} not found.");
+
+        if (deleted is false)
+            return Results.NotFound($"Video game with id {id} not found.");
+
+        return Results.NoContent();
     }
 }

@@ -26,8 +26,10 @@ public static class GetGameById
     public static async Task<IResult> Endpoint(ISender sender, int id, CancellationToken ct)
     {
         var result = await sender.Send(new Query(id), ct);
-        return result is not null
-            ? Results.Ok(result)
-            : Results.NotFound($"Video game with id {id} not found.");
+
+        if (result is null)
+            return Results.NotFound($"Video game with id {id} not found.");
+
+        return Results.Ok(result);
     }
 }

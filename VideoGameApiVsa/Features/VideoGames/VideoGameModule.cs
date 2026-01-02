@@ -9,7 +9,7 @@ public sealed class VideoGamesModule : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/Games")
+        var group = app.MapGroup("/api/games")
             .WithTags("Games");
 
         // GetAll 
@@ -17,7 +17,7 @@ public sealed class VideoGamesModule : ICarterModule
             .WithName(VideoGameRouteNames.GetAll)
             //.WithSummary("Get all video games")
             .WithDescription("Retrieves a list of all video games in the database")
-            .Produces<List<GetAllGames.Response>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<GetAllGames.Response>>(StatusCodes.Status200OK);
 
         // GetByID
         group.MapGet("/{id:int}", GetGameById.Endpoint)
