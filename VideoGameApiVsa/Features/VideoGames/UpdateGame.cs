@@ -5,6 +5,20 @@ namespace VideoGameApiVsa.Features.VideoGames;
 
 public static class UpdateGame
 {
+    /// <summary>
+    /// リクエスト用DTO（OpenAPI/Scalarで表示される）
+    /// </summary>
+    /// <param name="Title"></param>
+    /// <param name="Genre"></param>
+    /// <param name="ReleaseYear"></param>
+    public record Request(string Title, string Genre, int ReleaseYear);
+
+    /// <summary>
+    /// MediatRコマンド（内部使用のみ）
+    /// </summary>
+    /// <param name="Title"></param>
+    /// <param name="Genre"></param>
+    /// <param name="ReleaseYear"></param>
     public record Command(int Id, string Title, string Genre, int ReleaseYear) : IRequest<Response?>;
 
     public record Response(int Id, string Title, string Genre, int ReleaseYear);
@@ -28,8 +42,9 @@ public static class UpdateGame
         }
     }
 
-    public static async Task<IResult> Endpoint(ISender sender, int id, Command command, CancellationToken ct)
+    public static async Task<IResult> Endpoint(ISender sender, int id, Request request, CancellationToken ct)
     {
+        var command = new Command(id, request.Title, request.Genre, request.ReleaseYear);
         var updatedGame = await sender.Send(command with { Id = id }, ct);
         return updatedGame is not null
             ? Results.Ok(updatedGame)
