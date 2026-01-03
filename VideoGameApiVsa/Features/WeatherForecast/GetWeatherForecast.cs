@@ -18,7 +18,7 @@ public static class GetWeatherForecast
     /// <summary>
     /// 天気予報取得クエリ（パラメータなし）
     /// </summary>
-    public record Query() : IRequest<IEnumerable<WeatherForecastResponse>>;
+    public record WeatherForecastQuery() : IRequest<IEnumerable<WeatherForecastResponse>>;
 
     /// <summary>
     /// 天気予報のレスポンスDTO
@@ -32,9 +32,9 @@ public static class GetWeatherForecast
     /// <summary>
     /// クエリハンドラー：天気予報データを生成
     /// </summary>
-    public class Handler : IRequestHandler<Query, IEnumerable<WeatherForecastResponse>>
+    public class Handler : IRequestHandler<WeatherForecastQuery, IEnumerable<WeatherForecastResponse>>
     {
-        public Task<IEnumerable<WeatherForecastResponse>> Handle(Query query, CancellationToken ct)
+        public Task<IEnumerable<WeatherForecastResponse>> Handle(WeatherForecastQuery query, CancellationToken ct)
         {
             // 5日分の天気予報を生成
             var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -56,7 +56,7 @@ public static class GetWeatherForecast
     /// </summary>
     public static async Task<IResult> Endpoint(ISender sender, CancellationToken ct)
     {
-        var result = await sender.Send(new Query(), ct);
+        var result = await sender.Send(new WeatherForecastQuery(), ct);
         return Results.Ok(result);
     }
 }
