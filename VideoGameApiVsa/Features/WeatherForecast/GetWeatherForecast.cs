@@ -2,38 +2,62 @@
 
 namespace VideoGameApiVsa.Features.WeatherForecast;
 
+/// <summary>
+/// 天気予報を取得する機能
+/// </summary>
 public static class GetWeatherForecast
 {
+    /// <summary>
+    /// 天気の状態を表す定数
+    /// </summary>
     private static readonly string[] Summaries =
     [
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     ];
 
-    public record Query() : IRequest<IEnumerable<Response>>;
+    /// <summary>
+    /// 天気予報取得クエリ（パラメータなし）
+    /// </summary>
+    public record Query() : IRequest<IEnumerable<WeatherForecastResponse>>;
 
-    public record Response(DateOnly Date, int TemperatureC, int TemperatureF, string? Summary);
+    /// <summary>
+    /// 天気予報のレスポンスDTO
+    /// </summary>
+    /// <param name="Date"></param>
+    /// <param name="TemperatureC"></param>
+    /// <param name="TemperatureF"></param>
+    /// <param name="Summary"></param>
+    public record WeatherForecastResponse(DateOnly Date, int TemperatureC, int TemperatureF, string? Summary);
 
-    public class Handler : IRequestHandler<Query, IEnumerable<Response>>
+    /// <summary>
+    /// クエリハンドラー：天気予報データを生成
+    /// </summary>
+    public class Handler : IRequestHandler<Query, IEnumerable<WeatherForecastResponse>>
     {
-        public Task<IEnumerable<Response>> Handle(Query request, CancellationToken ct)
+        public Task<IEnumerable<WeatherForecastResponse>> Handle(Query query, CancellationToken ct)
         {
-            var TemperatureC = Random.Shared.Next(-20, 55);
-            var result = Enumerable.Range(1, 5).Select(index => new Response
-            (
-                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC,
-                32 + (int)(TemperatureC / 0.5556),
-                Summaries[Random.Shared.Next(Summaries.Length)]
-            ));
-            return Task.FromResult(result);
+            // 5日分の天気予報を生成
+            var forecast = Enumerable.Range(1, 5).Select(index =>
+            {
+                var temperatureC = Random.Shared.Next(-20, 55);
+                return new WeatherForecastResponse(
+                    Date: DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    TemperatureC: temperatureC,
+                    TemperatureF: 32 + (int)(temperatureC / 0.5556),
+                    Summary: Summaries[Random.Shared.Next(Summaries.Length)]
+                );
+            });
+            return Task.FromResult(forecast);
         }
     }
 
-    // 案4
-    internal static void GetWeatherForecastEndPoint(this IEndpointRouteBuilder app)
+    /// <summary>
+    /// エンドポイント：天気予報を取得
+    /// </summary>
+    public static async Task<IResult> Endpoint(ISender sender, CancellationToken ct)
     {
-        app.MapGet("/", async (ISender sender, CancellationToken ct) =>
-            await sender.Send(new Query(), ct));
+        var result = await sender.Send(new Query(), ct);
+        return Results.Ok(result);
     }
 }
 
@@ -45,7 +69,7 @@ public static class GetWeatherForecast
 //        [
 //            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 //        ];
-
+//
 //        [HttpGet(Name = "GetWeatherForecast")]
 //        public IEnumerable<WeatherForecast> Get()
 //        {
@@ -57,4 +81,12 @@ public static class GetWeatherForecast
 //            })
 //            .ToArray();
 //        }
+//    }
+//
+//    public class WeatherForecast
+//    {
+//        public DateOnly Date { get; set; }
+//        public int TemperatureC { get; set; }
+//        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+//        public string? Summary { get; set; }
 //    }
