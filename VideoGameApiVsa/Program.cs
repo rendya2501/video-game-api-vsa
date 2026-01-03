@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using VideoGameApiVsa.Behaviors;
@@ -77,7 +78,7 @@ app.UseExceptionHandler(errorApp =>
             .Get<IExceptionHandlerFeature>()?
             .Error;
 
-        // 例外が FluentValidation の ValidationException の場合
+        // FluentValidation の ValidationException のみ処理
         if (exception is ValidationException validationException)
         {
             // HTTP ステータスコードを 400 Bad Request に設定
@@ -88,26 +89,38 @@ app.UseExceptionHandler(errorApp =>
             // ValidationException が持つ Errors をプロパティ名ごとにグルーピングする
             var errors = validationException.Errors
                 // PropertyName（例: "Name", "Price"）ごとにまとめる
-                .GroupBy(e => e.PropertyName)   
-                // Dictionary<string, string[]> に変換
+                .GroupBy(e => e.PropertyName)
                 .ToDictionary(                  
                     g => g.Key,     // プロパティ名
                     g => g.Select(e => e.ErrorMessage).ToArray()    // エラーメッセージ配列
                 );
 
-            // JSON としてレスポンスを書き込む
-            // {
-            //   "Message": "Validation failed",
-            //   "Errors": {
-            //     "Name": ["Name is required"],
-            //     "Price": ["Price must be greater than 0"]
-            //   }
-            // }
-            await context.Response.WriteAsJsonAsync(new
+            // ProblemDetails を生成
+            var problemDetails = new ProblemDetails
             {
-                Message = "Validation failed",
-                Errors = errors
-            });
+                Type = "https://httpstatuses.com/400",
+                Title = "Validation failed",
+                Status = StatusCodes.Status400BadRequest,
+                Detail = "One or more validation errors occurred.",
+                Instance = context.Request.Path,
+            };
+
+            // 拡張領域に errors を詰める（RFC 準拠）
+            problemDetails.Extensions["errors"] = errors;
+
+            // JSON としてレスポンスを書き込む
+            //{
+            //  "type": "https://httpstatuses.com/400",
+            //  "title": "Validation failed",
+            //  "status": 400,
+            //  "detail": "One or more validation errors occurred.",
+            //  "instance": "/games",
+            //  "errors": {
+            //    "Name": ["Name must not be empty"],
+            //    "Price": ["Price must be greater than 0"]
+            //  }
+            // }
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
     });
 });
