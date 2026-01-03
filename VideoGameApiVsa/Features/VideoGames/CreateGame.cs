@@ -23,6 +23,8 @@ public static class CreateGame
     /// <param name="ReleaseYear"></param>
     public record CreateGameCommand(string Title, string Genre, int ReleaseYear) : IRequest<CreateGameResponse>;
 
+    public record CreateGameResponse(int Id, string Title, string Genre, int ReleaseYear);
+
     public class Validator : AbstractValidator<CreateGameCommand>
     {
         public Validator()
@@ -38,18 +40,10 @@ public static class CreateGame
         }
     }
 
-    public record CreateGameResponse(int Id, string Title, string Genre, int ReleaseYear);
-
-    public class Handler(VideoGameDbContext dbContext, IValidator<CreateGameCommand> validator) : IRequestHandler<CreateGameCommand, CreateGameResponse>
+    public class Handler(VideoGameDbContext dbContext) : IRequestHandler<CreateGameCommand, CreateGameResponse>
     {
         public async Task<CreateGameResponse> Handle(CreateGameCommand command, CancellationToken ct)
         {
-            var validationResult = await validator.ValidateAsync(command, ct);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
             var videoGame = new VideoGame
             {
                 Title = command.Title,

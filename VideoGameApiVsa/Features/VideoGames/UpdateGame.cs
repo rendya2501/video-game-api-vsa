@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using VideoGameApiVsa.Data;
 
 namespace VideoGameApiVsa.Features.VideoGames;
@@ -22,6 +23,21 @@ public static class UpdateGame
     public record UpdateGameCommand(int Id, string Title, string Genre, int ReleaseYear) : IRequest<UpdateGameResponse?>;
 
     public record UpdateGameResponse(int Id, string Title, string Genre, int ReleaseYear);
+
+    public class Validator : AbstractValidator<UpdateGameCommand>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Title)
+                .NotEmpty()
+                .MaximumLength(100);
+            RuleFor(x => x.Genre)
+                .NotEmpty()
+                .MaximumLength(50);
+            RuleFor(x => x.ReleaseYear)
+                .InclusiveBetween(1950, DateTime.Now.Year);
+        }
+    }
 
     public class Handler(VideoGameDbContext dbContext) : IRequestHandler<UpdateGameCommand, UpdateGameResponse?>
     {
