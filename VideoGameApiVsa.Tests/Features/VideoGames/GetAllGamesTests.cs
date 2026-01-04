@@ -64,5 +64,39 @@ public class GetAllGamesTests
         result.Should().NotBeNull();
         result.Should().BeEmpty();
     }
+
+    /// <summary>
+    /// 大量データのテスト（パフォーマンス確認）
+    /// </summary>
+    [Fact]
+    public async Task Handle_ShouldReturnAllGames_WhenManyGamesExist()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<VideoGameDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        using var dbContext = new VideoGameDbContext(options);
+
+        // 100件のゲームを追加
+        var games = Enumerable.Range(1, 100).Select(i => new VideoGame
+        {
+            Id = i,
+            Title = $"Game {i}",
+            Genre = "Action",
+            ReleaseYear = 2020
+        });
+        dbContext.VideoGames.AddRange(games);
+        await dbContext.SaveChangesAsync();
+
+        var handler = new GetAllGames.Handler(dbContext);
+        var query = new GetAllGames.GetAllGamesQuery();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Should().HaveCount(100);
+    }
 }
 

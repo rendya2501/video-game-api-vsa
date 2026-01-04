@@ -59,6 +59,24 @@ public class CreateGameTests
     }
 
     /// <summary>
+    /// 境界値テスト：タイトルちょうど100文字
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldPass_WhenTitleIsExactly100Characters()
+    {
+        // Arrange
+        var validator = new CreateGame.Validator();
+        var title = new string('A', 100); // ちょうど100文字
+        var command = new CreateGame.CreateGameCommand(title, "Action", 2023);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    /// <summary>
     /// タイトルが最大長を超える場合、バリデーションが失敗することを確認するテスト
     /// </summary>
     [Fact]
@@ -96,6 +114,25 @@ public class CreateGameTests
     }
 
     /// <summary>
+    /// ジャンルの最大長（50文字）超過テスト
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldFail_WhenGenreExceedsMaxLength()
+    {
+        // Arrange
+        var validator = new CreateGame.Validator();
+        var longGenre = new string('A', 51); // 51文字
+        var command = new CreateGame.CreateGameCommand("Test Game", longGenre, 2023);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Genre");
+    }
+
+    /// <summary>
     /// リリース年が1950年より前の場合、バリデーションが失敗することを確認するテスト
     /// </summary>
     [Fact]
@@ -111,6 +148,41 @@ public class CreateGameTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "ReleaseYear");
+    }
+
+    /// <summary>
+    /// 境界値テスト：リリース年が1950年（境界値）
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldPass_WhenReleaseYearIs1950()
+    {
+        // Arrange
+        var validator = new CreateGame.Validator();
+        var command = new CreateGame.CreateGameCommand("Test Game", "Action", 1950);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+
+    /// <summary>
+    /// 境界値テスト：リリース年が今年（境界値）
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldPass_WhenReleaseYearIsCurrentYear()
+    {
+        // Arrange
+        var validator = new CreateGame.Validator();
+        var command = new CreateGame.CreateGameCommand("Test Game", "Action", DateTime.Now.Year);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
     }
 
     /// <summary>

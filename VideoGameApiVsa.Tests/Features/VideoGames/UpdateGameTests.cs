@@ -88,6 +88,62 @@ public class UpdateGameTests
     }
 
     /// <summary>
+    /// タイトル最大長超過
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldFail_WhenTitleExceedsMaxLength()
+    {
+        // Arrange
+        var validator = new UpdateGame.Validator();
+        var longTitle = new string('A', 101);
+        var command = new UpdateGame.UpdateGameCommand(1, longTitle, "Action", 2023);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Title");
+    }
+
+    /// <summary>
+    /// ジャンル空のテスト 
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldFail_WhenGenreIsEmpty()
+    {
+        // Arrange
+        var validator = new UpdateGame.Validator();
+        var command = new UpdateGame.UpdateGameCommand(1, "Test Game", "", 2023);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Genre");
+    }
+
+    /// <summary>
+    /// リリース年が未来
+    /// </summary>
+    [Fact]
+    public void Validator_ShouldFail_WhenReleaseYearIsInFuture()
+    {
+        // Arrange
+        var validator = new UpdateGame.Validator();
+        var futureYear = DateTime.Now.Year + 1;
+        var command = new UpdateGame.UpdateGameCommand(1, "Test Game", "Action", futureYear);
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "ReleaseYear");
+    }
+
+    /// <summary>
     /// すべてのフィールドが有効な場合、バリデーションが成功することを確認するテスト
     /// </summary>
     [Fact]
